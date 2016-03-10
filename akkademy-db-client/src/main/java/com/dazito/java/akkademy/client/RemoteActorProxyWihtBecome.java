@@ -15,6 +15,7 @@ public class RemoteActorProxyWihtBecome extends AbstractActorWithStash {
     public RemoteActorProxyWihtBecome() {
         receive(ReceiveBuilder
                 .match(GetRequest.class, message -> {
+                    context().unbecome();
                     stash();
                 })
                 .match(Connected.class, message -> {
