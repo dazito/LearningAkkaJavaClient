@@ -2,6 +2,8 @@ package com.dazito.java.akkademy.client;
 
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -41,5 +43,16 @@ public class ClientIntegrationTest {
         String result = (String) completableFuture.get();
 
         assert (Objects.equals(result, "a non existing value"));
+    }
+
+    @Test
+    public void setBatchRequest() throws Exception {
+        final Map<String, Object> map = new HashMap<>();
+        for(int i = 0; i<5; i++) {
+            map.put(String.valueOf(i), i);
+        }
+        final CompletableFuture completableFuture = (CompletableFuture) client.setBatchRequest(map);
+        final String result = (String) completableFuture.get();
+        assert(Objects.equals(result, "OK"));
     }
 }
