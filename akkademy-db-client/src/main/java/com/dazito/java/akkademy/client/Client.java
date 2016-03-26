@@ -1,7 +1,9 @@
 package com.dazito.java.akkademy.client;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
+import akka.actor.Props;
 import akka.pattern.Patterns;
 import com.dazito.java.dakkabase.messages.*;
 import scala.compat.java8.FutureConverters;
@@ -19,9 +21,11 @@ public class Client {
 
     private final ActorSystem system = ActorSystem.create("LocalSystem-Java");
     private final ActorSelection remoteDb;
+    private final ActorRef connectionMonitorActor;
 
     public Client(String remoteAddress) {
         remoteDb = system.actorSelection("akka.tcp://dakkabase-java@" + remoteAddress + "/user/dakkabase-db");
+        connectionMonitorActor = system.actorOf(Props.create(ConnectionMonitorActor.class, remoteDb));
     }
 
     public CompletionStage set(String key, Object value) {
@@ -42,14 +46,12 @@ public class Client {
 
     public CompletionStage<Object> setBatchRequest(Map<String, Object> map) {
         final List<SetRequest> setList = new ArrayList<>(map.size());
-        map.forEach((s, o) -> {
-            setList.add(new SetRequest(s, o));
-        });
+        map.forEach((s, o) -> setList.add(new SetRequest(s, o)));
 
         return FutureConverters.toJava(Patterns.ask(remoteDb, new ListSetRequest(setList), TIMEOUT));
     }
 
-    public CompletionStage<Object> ping() {
-        return FutureConverters.toJava(Patterns.ask(remoteDb, new CheckConnected(), TIMEOUT));
+    public CompletionStage<Object> isConnected() {
+        return FutureConverters.toJava(Patterns.ask(connectionMonitorActor, new CheckConnected(), TIMEOUT));
     }
 }
