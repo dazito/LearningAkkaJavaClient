@@ -48,4 +48,8 @@ public class Client {
 
         return FutureConverters.toJava(Patterns.ask(remoteDb, new ListSetRequest(setList), TIMEOUT));
     }
+
+    public CompletionStage<Object> ping() {
+        return FutureConverters.toJava(Patterns.ask(remoteDb, new CheckConnected(), TIMEOUT));
+    }
 }
